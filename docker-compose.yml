@@ -1,0 +1,39 @@
+version: "3.7"
+services:
+  db:
+    image: mongo
+    restart: always
+    hostname: ${DBHOSTNAME}
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${DBROOTUSERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${DBROOTPASSWORD}
+    ports:
+      - ${DBPORT}:27017
+    networks:
+      - api-mongo
+      - clientdb-mongo
+    volumes:
+      #- ./db/dbData:/data/db
+      - dbData:/data/db
+  clientdb:
+    hostname: clientdb
+    image: mongo-express
+    restart: always
+    ports:
+      - ${DBCLIENTPORT}:8081
+    environment:
+      ME_CONFIG_BASICAUTH_USERNAME: ${DBCLIENTROOTUSERNAME}
+      ME_CONFIG_BASICAUTH_PASSWORD: ${DBCLIENTROOTPASSWORD}
+      ME_CONFIG_MONGODB_ADMINUSERNAME: ${DBROOTUSERNAME}
+      ME_CONFIG_MONGODB_ADMINPASSWORD: ${DBROOTPASSWORD}
+      ME_CONFIG_MONGODB_URL: mongodb://${DBROOTUSERNAME}:${DBROOTPASSWORD}@${DBHOSTNAME}:27017/
+    networks:
+      - clientdb-mongo
+    depends_on:
+      - db
+networks:
+  web-api:
+  api-mongo:
+  clientdb-mongo:
+volumes:
+  dbData:
